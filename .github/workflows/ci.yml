@@ -11,21 +11,26 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v2
+            - name: Copy .env.test to .env
+              run: cp .env.test .env
             - name: Pull images
               run: docker compose pull
             - name: Start services
               run: docker compose up --build -d
             - name: Wait for services
-              run: |
-                  while status="$(docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" "$(docker compose ps -q php)")"; do
-                    case $status in
-                      starting) sleep 1;;
-                      healthy) exit 0;;
-                      unhealthy) exit 1;;
-                    esac
-                  done
-                  exit 1
+              run: sleep 20
             - name: Check HTTP reachability
               run: curl http://localhost
             - name: Check HTTPS reachability
               run: curl -k https://localhost
+    docker-test:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+        - name: Run tests
+          run:  |
+            rm .dockerignore
+            mv .env.test .env
+            docker build -t app-test --target symfony_php .
+            docker run --entrypoint sh app-test -c "php bin/console doctrine:database:create && php bin/console doctrine:migrations:migrate"
+            docker run --entrypoint sh app-test -c "php bin/phpunit"
