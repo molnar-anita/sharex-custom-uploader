@@ -9,8 +9,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-class User
-{
+class User {
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -25,55 +25,46 @@ class User
     #[ORM\OneToMany(mappedBy: 'files', targetEntity: File::class, orphanRemoval: true)]
     private Collection $files;
 
-    public function __construct()
-    {
+    public function __construct() {
         $this->files = new ArrayCollection();
     }
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getName(): ?string
-    {
+    public function getName(): ?string {
         return $this->name;
     }
 
-    public function setName(string $name): self
-    {
+    public function setName(string $name): self {
         $this->name = $name;
 
         return $this;
     }
 
-    public function getUuid(): ?string
-    {
+    public function getApiKey(): ?string {
         return $this->uuid;
     }
 
-    public function setUuid(string $uuid): self
-    {
+    public function getId(): ?int {
+        return $this->id;
+    }
+
+    public function getUuid(): ?string {
+        return $this->uuid;
+    }
+
+    public function setUuid(string $uuid): self {
         $this->uuid = $uuid;
 
         return $this;
     }
 
-    public function getApiKey(): ?string
-    {
-        return $this->uuid;
-    }
-
     /**
      * @return Collection<int, File>
      */
-    public function getFiles(): Collection
-    {
+    public function getFiles(): Collection {
         return $this->files;
     }
 
-    public function addFile(File $file): self
-    {
+    public function addFile(File $file): self {
         if (!$this->files->contains($file)) {
             $this->files->add($file);
             $file->setUser($this);
@@ -82,8 +73,7 @@ class User
         return $this;
     }
 
-    public function removeFile(File $file): self
-    {
+    public function removeFile(File $file): self {
         if ($this->files->removeElement($file)) {
             // set the owning side to null (unless already changed)
             if ($file->getUser() === $this) {

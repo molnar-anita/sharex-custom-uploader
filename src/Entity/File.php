@@ -7,8 +7,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: FileRepository::class)]
-class File
-{
+class File {
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -36,90 +36,75 @@ class File
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    public function getId(): ?int
-    {
+    public function getId(): ?int {
         return $this->id;
     }
 
-    public function getName(): ?string
-    {
+    public function getName(): ?string {
         return $this->name;
     }
 
-    public function setName(string $name): self
-    {
+    public function setName(string $name): self {
         $this->name = $name;
 
         return $this;
     }
 
-    public function getPath(): ?string
-    {
+    public function getPath(): ?string {
         return $this->path;
     }
 
-    public function setPath(string $path): self
-    {
+    public function setPath(string $path): self {
         $this->path = $path;
 
         return $this;
     }
 
-    public function getUuid(): ?string
-    {
+    public function getUuid(): ?string {
         return $this->uuid;
     }
 
-    public function setUuid(string $uuid): self
-    {
+    public function setUuid(string $uuid): self {
         $this->uuid = $uuid;
 
         return $this;
     }
 
-    public function getMime(): ?string
-    {
+    public function getMime(): ?string {
         return $this->mime;
     }
 
-    public function setMime(string $mime): self
-    {
+    public function setMime(string $mime): self {
         $this->mime = $mime;
 
         return $this;
     }
 
-    public function getExpireIn(): ?\DateTimeInterface
-    {
+    public function getExpireIn(): ?\DateTimeInterface {
         return $this->expire_in;
     }
 
-    public function setExpireIn(?\DateTimeInterface $expire_in): self
-    {
+    public function setExpireIn(?\DateTimeInterface $expire_in): self {
         $this->expire_in = $expire_in;
 
         return $this;
     }
 
-    public function isAccessOnce(): ?bool
-    {
+    public function isAccessOnce(): ?bool {
         return $this->access_once;
     }
 
-    public function setAccessOnce(bool $access_once): self
-    {
+    public function setAccessOnce(bool $access_once): self {
         $this->access_once = $access_once;
 
         return $this;
     }
 
-    public function getUser(): ?User
-    {
+    public function getUser(): ?User {
         return $this->user;
     }
 
-    public function setUser(?User $user): self
-    {
+    public function setUser(?User $user): self {
         $this->user = $user;
 
         return $this;

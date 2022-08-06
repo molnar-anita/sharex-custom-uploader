@@ -14,15 +14,13 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method File[]    findAll()
  * @method File[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class FileRepository extends ServiceEntityRepository
-{
-    public function __construct(ManagerRegistry $registry)
-    {
+class FileRepository extends ServiceEntityRepository {
+
+    public function __construct(ManagerRegistry $registry) {
         parent::__construct($registry, File::class);
     }
 
-    public function add(File $entity, bool $flush = false): void
-    {
+    public function add(File $entity, bool $flush = false): void {
         $this->getEntityManager()->persist($entity);
 
         if ($flush) {
@@ -30,8 +28,7 @@ class FileRepository extends ServiceEntityRepository
         }
     }
 
-    public function remove(File $entity, bool $flush = false): void
-    {
+    public function remove(File $entity, bool $flush = false): void {
         $this->getEntityManager()->remove($entity);
 
         if ($flush) {
