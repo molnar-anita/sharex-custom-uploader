@@ -20,6 +20,7 @@ services:
     environment:
       PHPIZE_DEPS: php-sqlite3
       DATABASE_URL: "sqlite:///%kernel.project_dir%/app.db"
+      PHP_INI_DIR: "docker/php/ini"
 
   caddy:
     build:

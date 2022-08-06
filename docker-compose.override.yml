@@ -17,6 +17,8 @@ services:
     volumes:
       - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - ./public:/srv/app/public:ro
+    environment:
+      SERVER_NAME: sharex.localhost
 
 ###> symfony/mercure-bundle ###
 ###< symfony/mercure-bundle ###
