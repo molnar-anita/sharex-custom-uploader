@@ -23,6 +23,10 @@ class ApiKeyService {
         return $user;
     }
 
+    public function getUserByApiKey(string $apiKey): ?User {
+        return $this->userRepository->findOneBy(['uuid' => $apiKey]);
+    }
+
     /**
      * @return User[]
      */
