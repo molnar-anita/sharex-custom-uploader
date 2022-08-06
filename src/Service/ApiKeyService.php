@@ -7,8 +7,10 @@ use App\Repository\UserRepository;
 use Symfony\Component\Uid\Uuid;
 
 class ApiKeyService {
-    public function __construct(private readonly UserRepository $userRepository) {
-    }
+
+    public function __construct(
+        private readonly UserRepository $userRepository
+    ) {}
 
     public function createNewApiKey(string $name): User {
         $user = new User();
@@ -19,5 +21,12 @@ class ApiKeyService {
         $this->userRepository->add($user, true);
 
         return $user;
+    }
+
+    /**
+     * @return User[]
+     */
+    public function getAllApiKeys(): array {
+        return $this->userRepository->findAll();
     }
 }
