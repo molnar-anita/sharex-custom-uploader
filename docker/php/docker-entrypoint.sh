@@ -11,6 +11,8 @@ if [ "$1" = 'php-fpm' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
 		ln -sf "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 	fi
 
+	chmod 777 -R /srv/app
+
 	mkdir -p var/cache var/log
 
 	# The first time volumes are mounted, the project needs to be recreated

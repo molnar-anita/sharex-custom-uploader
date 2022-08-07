@@ -17,7 +17,7 @@ class CheckApiKeyMiddleware implements MiddlewareInterface {
     ) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface {
-        if (!$request->hasHeader('Authentication') || !$this->checkApiKey($request->getHeaderLine('Authentication'))) {
+        if (!$request->hasHeader('Authentication') || !$this->checkApiKey($request->getHeaderLine('Authentication') ?? '')) {
             return new Response(status: SymfonyResponse::HTTP_UNAUTHORIZED);
         }
         return $handler->handle($request);
