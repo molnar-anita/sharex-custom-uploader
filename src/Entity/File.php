@@ -3,8 +3,10 @@
 namespace App\Entity;
 
 use App\Repository\FileRepository;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\String\ByteString;
 
 #[ORM\Entity(repositoryClass: FileRepository::class)]
 class File {
@@ -26,15 +28,46 @@ class File {
     #[ORM\Column(length: 255)]
     private ?string $mime = null;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $created_at;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $expire_in = null;
 
     #[ORM\Column]
     private ?bool $access_once = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $deleteToken = null;
+
     #[ORM\ManyToOne(inversedBy: 'user_id')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
+
+    public function __construct() {
+        $this->created_at = new DateTimeImmutable();
+        $this->deleteToken = ByteString::fromRandom(16)->toString();
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface {
+        return $this->created_at;
+    }
+
+    public function setCreatedAt(\DateTimeInterface $created_at): File {
+        $this->created_at = $created_at;
+
+        return $this;
+    }
+
+    public function getDeleteToken(): ?string {
+        return $this->deleteToken;
+    }
+
+    public function setDeleteToken(string $deleteToken): File {
+        $this->deleteToken = $deleteToken;
+
+        return $this;
+    }
 
     public function getId(): ?int {
         return $this->id;

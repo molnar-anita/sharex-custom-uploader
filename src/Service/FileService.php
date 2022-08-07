@@ -54,14 +54,14 @@ class FileService {
         );
     }
 
-    public function removeFile(string $uuid, string $fileName, User $user): void {
+    public function removeFile(string $uuid, string $fileName, string $deleteToken): void {
         $file = $this->fileRepository->findOneBy(['uuid' => $uuid, 'name' => $fileName]);
 
         if (is_null($file))
             throw new FileNotExistsException($fileName);
 
-        if (!$file->getUser()->equals($user))
-            throw new UserHasNoPermissionOnFileException($fileName, 'delete', $user);
+        if ($file->getDeleteToken() !== $deleteToken)
+            throw new UserHasNoPermissionOnFileException($fileName, 'delete');
 
         $this->fileRepository->remove($file, true);
         $this->storage->delete($file->getPath());

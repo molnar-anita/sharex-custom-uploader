@@ -56,7 +56,8 @@ class UploadFileController extends AbstractController {
                     'api.file.delete',
                     [
                         'uuid' => $file->getUuid(),
-                        'fileName' => $file->getName()
+                        'fileName' => $file->getName(),
+                        'deleteToken' => $file->getDeleteToken()
                     ],
                     UrlGeneratorInterface::ABSOLUTE_URL
                 ),

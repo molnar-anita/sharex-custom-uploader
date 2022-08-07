@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -22,10 +23,14 @@ class User {
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $created_at;
+
     #[ORM\OneToMany(mappedBy: 'files', targetEntity: File::class, orphanRemoval: true)]
     private Collection $files;
 
     public function __construct() {
+        $this->created_at = new DateTimeImmutable();
         $this->files = new ArrayCollection();
     }
 
@@ -89,5 +94,15 @@ class User {
 
     public function getApiKey(): ?string {
         return $this->uuid;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface {
+        return $this->created_at;
+    }
+
+    public function setCreatedAt(\DateTimeInterface $created_at): User {
+        $this->created_at = $created_at;
+
+        return $this;
     }
 }

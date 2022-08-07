@@ -2,28 +2,24 @@
 
 namespace App\Controller\Api;
 
-use App\Entity\User;
 use App\Exception\FileNotExistsException;
 use App\Exception\UserHasNoPermissionOnFileException;
-use App\Middleware\CheckApiKeyMiddleware;
 use App\Service\FileService;
-use Kafkiansky\SymfonyMiddleware\Attribute\Middleware;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class DeleteFileController extends AbstractController {
 
-    #[Middleware([CheckApiKeyMiddleware::class])]
-    #[Route('/api/file/{uuid}/{fileName}', name: 'api.file.delete', methods: ['DELETE'])]
+    #[Route('/api/file/{uuid}/{fileName}/{deleteToken}', name: 'api.file.delete', methods: ['DELETE', 'GET'])]
     public function deleteFile(
         string      $uuid,
         string      $fileName,
-        FileService $fileService,
-        User        $user
+        string      $deleteToken,
+        FileService $fileService
     ): Response {
         try {
-            $fileService->removeFile($uuid, $fileName, $user);
+            $fileService->removeFile($uuid, $fileName, $deleteToken);
         } catch (FileNotExistsException $e) {
             return new Response(status: Response::HTTP_NOT_FOUND);
         } catch (UserHasNoPermissionOnFileException $e) {
