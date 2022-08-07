@@ -2,7 +2,6 @@
 
 namespace App\Repository;
 
-use App\Entity\File;
 use App\Exception\FileAlreadyExistsException;
 use App\Exception\UnexpectedException;
 use DateTime;
@@ -14,12 +13,12 @@ use Symfony\Component\String\ByteString;
 
 class LocalFileStorageRepository {
 
-    private static $maxRetry = 10;
-    private static $storagePath = 'storage/';
+    private static int $maxRetry = 10;
+    private static string $storagePath = 'storage/';
 
     public function __construct(
-        private Filesystem      $filesystem,
-        private KernelInterface $app
+        private readonly Filesystem      $filesystem,
+        private readonly KernelInterface $app
     ) {}
 
     public function saveWithRandomName(UploadedFile $file): string {
@@ -36,11 +35,11 @@ class LocalFileStorageRepository {
     }
 
     private function generateRandomFileName(): string {
-        return (new DateTime())->format('Y_m_d') . '_' . ByteString::fromRandom(16);
+        return (new DateTime())->format('Y_m_d_H_i') . '_' . ByteString::fromRandom(16);
     }
 
     public function save(UploadedFile $file, string $name): void {
-        $path = Path::join($this->app->getProjectDir(), self::$storagePath, $name);
+        $path = $this->getPath($name);
 
         if ($this->filesystem->exists($path)) {
             throw new FileAlreadyExistsException($name, $path);
@@ -49,11 +48,11 @@ class LocalFileStorageRepository {
         $this->filesystem->dumpFile($path, $file->getContent());
     }
 
-    public function getPath(File $file): void {}
+    public function getPath(string $name): string {
+        return Path::join($this->app->getProjectDir(), self::$storagePath, $name);
+    }
 
     public function delete(string $name): void {
-        $path = Path::join($this->app->getProjectDir(), self::$storagePath, $name);
-        
-        $this->filesystem->remove($path);
+        $this->filesystem->remove($this->getPath($name));
     }
 }

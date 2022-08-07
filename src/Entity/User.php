@@ -39,24 +39,6 @@ class User {
         return $this;
     }
 
-    public function getApiKey(): ?string {
-        return $this->uuid;
-    }
-
-    public function getId(): ?int {
-        return $this->id;
-    }
-
-    public function getUuid(): ?string {
-        return $this->uuid;
-    }
-
-    public function setUuid(string $uuid): self {
-        $this->uuid = $uuid;
-
-        return $this;
-    }
-
     /**
      * @return Collection<int, File>
      */
@@ -82,5 +64,30 @@ class User {
         }
 
         return $this;
+    }
+
+    public function equals(User $user): bool {
+        return
+            $this->getUuid() === $user->getUuid() &&
+            $this->getId() === $user->getId() &&
+            $this->getApiKey() === $user->getApiKey();
+    }
+
+    public function getUuid(): ?string {
+        return $this->uuid;
+    }
+
+    public function setUuid(string $uuid): self {
+        $this->uuid = $uuid;
+
+        return $this;
+    }
+
+    public function getId(): ?int {
+        return $this->id;
+    }
+
+    public function getApiKey(): ?string {
+        return $this->uuid;
     }
 }
