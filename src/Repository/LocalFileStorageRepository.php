@@ -51,6 +51,10 @@ class LocalFileStorageRepository {
         return Path::join($this->app->getProjectDir(), self::$storagePath, $name);
     }
 
+    public function getContent(string $name): string {
+        return file_get_contents($this->getPath($name));
+    }
+
     public function delete(string $name): void {
         $this->filesystem->remove($this->getPath($name));
     }

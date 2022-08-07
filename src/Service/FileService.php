@@ -8,8 +8,8 @@ use App\Exception\FileNotExistsException;
 use App\Exception\UserHasNoPermissionOnFileException;
 use App\Repository\FileRepository;
 use App\Repository\LocalFileStorageRepository;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
@@ -36,21 +36,27 @@ class FileService {
         return $file;
     }
 
-    public function downloadFile(string $uuid, string $fileName): BinaryFileResponse {
+    public function downloadFile(string $uuid, string $fileName): Response {
         $file = $this->fileRepository->findOneBy(['uuid' => $uuid, 'name' => $fileName]);
 
         if (is_null($file))
             throw new FileNotExistsException($fileName);
 
-        return (new BinaryFileResponse(
-            $this->storage->getPath($file->getPath()),
-            Response::HTTP_OK,
-            ['Content-Type' => $file->getMime()]
-        ))->setContentDisposition(
-        //TODO: In some cases it should be override (e.g. JSON)
-            ResponseHeaderBag::DISPOSITION_INLINE,
-            $file->getName()
-        );
+        $response = (new Response(
+            content: $this->storage->getContent($file->getPath()),
+            status: Response::HTTP_OK,
+            headers: [
+                'Content-Type' => $file->getMime(),
+                'Content-Disposition' => HeaderUtils::makeDisposition(ResponseHeaderBag::DISPOSITION_INLINE, $file->getName())
+            ]
+        ));
+
+        if ($file->isAccessOnce()) {
+            $this->fileRepository->remove($file, true);
+            $this->storage->delete($file->getPath());
+        }
+
+        return $response;
     }
 
     public function removeFile(string $uuid, string $fileName, string $deleteToken): void {
