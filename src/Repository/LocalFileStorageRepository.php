@@ -7,7 +7,6 @@ use App\Exception\UnexpectedException;
 use DateTime;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Path;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\String\ByteString;
 
@@ -21,11 +20,11 @@ class LocalFileStorageRepository {
         private readonly KernelInterface $app
     ) {}
 
-    public function saveWithRandomName(UploadedFile $file): string {
+    public function saveContentWithRandomName(string $content): string {
         for ($i = 0; $i < self::$maxRetry; $i++) {
             try {
                 $randomFileName = $this->generateRandomFileName();
-                $this->save($file, $randomFileName);
+                $this->save($content, $randomFileName);
 
                 return $randomFileName;
             } catch (FileAlreadyExistsException $e) {
@@ -38,14 +37,14 @@ class LocalFileStorageRepository {
         return (new DateTime())->format('Y_m_d_H_i') . '_' . ByteString::fromRandom(16);
     }
 
-    public function save(UploadedFile $file, string $name): void {
+    public function save(string $content, string $name): void {
         $path = $this->getPath($name);
 
         if ($this->filesystem->exists($path)) {
             throw new FileAlreadyExistsException($name, $path);
         }
 
-        $this->filesystem->dumpFile($path, $file->getContent());
+        $this->filesystem->dumpFile($path, $content);
     }
 
     public function getPath(string $name): string {

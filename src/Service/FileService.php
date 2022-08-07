@@ -12,7 +12,6 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
-use Symfony\Component\Uid\Uuid;
 
 class FileService {
 
@@ -22,11 +21,10 @@ class FileService {
     ) {}
 
     public function saveFile(UploadedFile $uploadedFile, User $user): File {
-        $randomName = $this->storage->saveWithRandomName($uploadedFile);
+        $randomName = $this->storage->saveContentWithRandomName($uploadedFile->getContent());
 
         //TODO: Sanitize file name
         $file = (new File())
-            ->setUuid(Uuid::v4())
             ->setName($uploadedFile->getClientOriginalName())
             ->setAccessOnce(false)
             ->setMime($uploadedFile->getMimeType())
@@ -49,6 +47,7 @@ class FileService {
             Response::HTTP_OK,
             ['Content-Type' => $file->getMime()]
         ))->setContentDisposition(
+        //TODO: In some cases it should be override (e.g. JSON)
             ResponseHeaderBag::DISPOSITION_INLINE,
             $file->getName()
         );

@@ -7,6 +7,7 @@ use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\String\ByteString;
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: FileRepository::class)]
 class File {
@@ -45,6 +46,7 @@ class File {
     private ?User $user = null;
 
     public function __construct() {
+        $this->uuid = Uuid::v4();
         $this->created_at = new DateTimeImmutable();
         $this->deleteToken = ByteString::fromRandom(16)->toString();
     }
@@ -95,12 +97,6 @@ class File {
 
     public function getUuid(): ?string {
         return $this->uuid;
-    }
-
-    public function setUuid(string $uuid): self {
-        $this->uuid = $uuid;
-
-        return $this;
     }
 
     public function getMime(): ?string {

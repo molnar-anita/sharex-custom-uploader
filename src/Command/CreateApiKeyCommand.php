@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use App\Service\ApiKeyService;
+use App\Service\SharexConfigFileService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -18,7 +19,8 @@ class CreateApiKeyCommand extends Command {
     protected static $defaultName = 'app:api-key:create';
 
     public function __construct(
-        private readonly ApiKeyService $apiKeyService
+        private readonly ApiKeyService           $apiKeyService,
+        private readonly SharexConfigFileService $sharexConfigFileService
     ) {
         parent::__construct();
     }
@@ -30,6 +32,11 @@ class CreateApiKeyCommand extends Command {
         $apiKey = $user->getApiKey();
 
         $output->writeln("New generated API key: {$apiKey} for {$name}");
+
+        $urlForConfig = $this->sharexConfigFileService->generateAndSaveConfigFileAndGetUrl($user);
+
+        $output->writeln("Download the ShareX config: $urlForConfig");
+
         return Command::SUCCESS;
     }
 

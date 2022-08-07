@@ -4,7 +4,6 @@ namespace App\Service;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
-use Symfony\Component\Uid\Uuid;
 
 class ApiKeyService {
 
@@ -16,7 +15,6 @@ class ApiKeyService {
         $user = new User();
 
         $user->setName($name);
-        $user->setUuid(Uuid::v4());
 
         $this->userRepository->add($user, true);
 
