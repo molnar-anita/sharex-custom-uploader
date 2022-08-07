@@ -8,6 +8,7 @@ use App\Exception\FileNotExistsException;
 use App\Exception\UserHasNoPermissionOnFileException;
 use App\Repository\FileRepository;
 use App\Repository\LocalFileStorageRepository;
+use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,7 +21,7 @@ class FileService {
         private readonly LocalFileStorageRepository $storage
     ) {}
 
-    public function saveFile(UploadedFile $uploadedFile, User $user): File {
+    public function saveFile(UploadedFile $uploadedFile, User $user, ?DateTimeImmutable $expireIn = null): File {
         $randomName = $this->storage->saveContentWithRandomName($uploadedFile->getContent());
 
         //TODO: Sanitize file name
@@ -29,6 +30,7 @@ class FileService {
             ->setAccessOnce(false)
             ->setMime($uploadedFile->getMimeType())
             ->setPath($randomName)
+            ->setExpireIn($expireIn)
             ->setUser($user);
 
         $this->fileRepository->add($file, true);
@@ -70,5 +72,17 @@ class FileService {
 
         $this->fileRepository->remove($file, true);
         $this->storage->delete($file->getPath());
+    }
+
+    public function removeOldFiles(): int {
+        $files = $this->fileRepository->findExpiredFiles();
+
+        foreach ($files as $file) {
+            $this->fileRepository->remove($file);
+        }
+
+        $this->fileRepository->flush();
+
+        return count($files);
     }
 }

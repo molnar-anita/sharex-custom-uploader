@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\File;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -28,12 +29,25 @@ class FileRepository extends ServiceEntityRepository {
         }
     }
 
+    public function flush(): void {
+        $this->getEntityManager()->flush();
+    }
+
     public function remove(File $entity, bool $flush = false): void {
         $this->getEntityManager()->remove($entity);
 
         if ($flush) {
             $this->getEntityManager()->flush();
         }
+    }
+
+    public function findExpiredFiles(): array {
+        return $this->createQueryBuilder('f')
+            ->andWhere('f.expire_in IS NOT NULL')
+            ->andWhere('f.expire_in < :now')
+            ->setParameter('now', new DateTimeImmutable())
+            ->getQuery()
+            ->getResult();
     }
 
 //    /**

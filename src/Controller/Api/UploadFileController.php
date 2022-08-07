@@ -6,6 +6,9 @@ use App\Entity\File;
 use App\Entity\User;
 use App\Middleware\CheckApiKeyMiddleware;
 use App\Service\FileService;
+use DateInterval;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Kafkiansky\SymfonyMiddleware\Attribute\Middleware;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -32,12 +35,28 @@ class UploadFileController extends AbstractController {
         if (is_null($newFile) || !$newFile->isValid())
             return new Response(status: Response::HTTP_BAD_REQUEST);
 
-        $file = $fileService->saveFile($newFile, $user);
+        $file = $fileService->saveFile($newFile, $user, $this->determineExpirationDateTime($request));
 
         return $this->json($this->generateResponse($file));
     }
 
-    protected function generateResponse(File $file): array {
+    private function determineExpirationDateTime(Request $request): ?DateTimeImmutable {
+        //TODO: Make configurable
+        $expireInMinutes = 60 * 24 * 30; // 30 days
+
+        if ($request->headers->has('X-Expire-In-Minutes')) {
+            $headerField = $request->headers->get('X-Expire-In-Minutes');
+            if (is_numeric($headerField)) {
+                $minutes = intval($headerField);
+                if ($minutes >= 0 && $minutes <= 60 * 24 * 365)
+                    $expireInMinutes = $minutes;
+            }
+        }
+
+        return $expireInMinutes === 0 ? null : (new DateTimeImmutable())->add(new DateInterval("PT{$expireInMinutes}M"));
+    }
+
+    private function generateResponse(File $file): array {
         return [
             'uuid' => $file->getUuid(),
             'fileName' => $file->getName(),
@@ -61,6 +80,7 @@ class UploadFileController extends AbstractController {
                     ],
                     UrlGeneratorInterface::ABSOLUTE_URL
                 ),
+            'expireIn' => $file->getExpireIn()->format(DateTimeInterface::ATOM)
         ];
     }
 }
