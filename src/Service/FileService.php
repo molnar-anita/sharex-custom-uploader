@@ -13,20 +13,21 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 class FileService {
 
     public function __construct(
         private readonly FileRepository             $fileRepository,
-        private readonly LocalFileStorageRepository $storage
+        private readonly LocalFileStorageRepository $storage,
+        private readonly SluggerInterface           $slugger
     ) {}
 
     public function saveFile(UploadedFile $uploadedFile, User $user, ?DateTimeImmutable $expireIn = null, bool $accessOnce = false): File {
         $randomName = $this->storage->saveContentWithRandomName($uploadedFile->getContent());
 
-        //TODO: Sanitize file name
         $file = (new File())
-            ->setName($uploadedFile->getClientOriginalName())
+            ->setName($this->slugger->slug($uploadedFile->getClientOriginalName()))
             ->setAccessOnce(false)
             ->setMime($uploadedFile->getMimeType())
             ->setPath($randomName)
