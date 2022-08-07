@@ -35,7 +35,12 @@ class UploadFileController extends AbstractController {
         if (is_null($newFile) || !$newFile->isValid())
             return new Response(status: Response::HTTP_BAD_REQUEST);
 
-        $file = $fileService->saveFile($newFile, $user, $this->determineExpirationDateTime($request));
+        $file = $fileService->saveFile(
+            $newFile,
+            $user,
+            $this->determineExpirationDateTime($request),
+            $this->determineAccessOnceFlag($request)
+        );
 
         return $this->json($this->generateResponse($file));
     }
@@ -54,6 +59,10 @@ class UploadFileController extends AbstractController {
         }
 
         return $expireInMinutes === 0 ? null : (new DateTimeImmutable())->add(new DateInterval("PT{$expireInMinutes}M"));
+    }
+
+    private function determineAccessOnceFlag(Request $request): bool {
+        return $request->headers->has('X-Access-Once') && $request->headers->get('X-Access-Once') === '1';
     }
 
     private function generateResponse(File $file): array {
@@ -80,7 +89,8 @@ class UploadFileController extends AbstractController {
                     ],
                     UrlGeneratorInterface::ABSOLUTE_URL
                 ),
-            'expireIn' => $file->getExpireIn()->format(DateTimeInterface::ATOM)
+            'expireIn' => $file->getExpireIn()?->format(DateTimeInterface::ATOM),
+            'accessOnce' => $file->isAccessOnce()
         ];
     }
 }

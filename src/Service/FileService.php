@@ -21,7 +21,7 @@ class FileService {
         private readonly LocalFileStorageRepository $storage
     ) {}
 
-    public function saveFile(UploadedFile $uploadedFile, User $user, ?DateTimeImmutable $expireIn = null): File {
+    public function saveFile(UploadedFile $uploadedFile, User $user, ?DateTimeImmutable $expireIn = null, bool $accessOnce = false): File {
         $randomName = $this->storage->saveContentWithRandomName($uploadedFile->getContent());
 
         //TODO: Sanitize file name
@@ -31,6 +31,7 @@ class FileService {
             ->setMime($uploadedFile->getMimeType())
             ->setPath($randomName)
             ->setExpireIn($expireIn)
+            ->setAccessOnce($accessOnce)
             ->setUser($user);
 
         $this->fileRepository->add($file, true);
