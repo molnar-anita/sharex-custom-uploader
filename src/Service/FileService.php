@@ -47,12 +47,16 @@ class FileService {
         return preg_replace('/(.*)-(.+$)/', '$1.$2', $string);
     }
 
-    public function downloadFile(string $uuid, string $fileName): Response {
+    public function downloadFileByUUID(string $uuid, string $fileName): Response {
         $file = $this->fileRepository->findOneBy(['uuid' => $uuid, 'name' => $fileName]);
 
         if (is_null($file))
             throw new FileNotExistsException($fileName);
 
+        return $this->downloadFile($file);
+    }
+
+    private function downloadFile(File $file): Response {
         $response = (new Response(
             content: $this->storage->getContent($file->getPath()),
             status: Response::HTTP_OK,
@@ -69,6 +73,16 @@ class FileService {
 
         return $response;
     }
+
+    public function downloadFileByBase64Id(string $base64Id, string $fileName): Response {
+        $file = $this->fileRepository->findOneBy(['id' => base64_decode($base64Id), 'name' => $fileName]);
+
+        if (is_null($file))
+            throw new FileNotExistsException($fileName);
+
+        return $this->downloadFile($file);
+    }
+
 
     public function removeFile(string $uuid, string $fileName, string $deleteToken): void {
         $file = $this->fileRepository->findOneBy(['uuid' => $uuid, 'name' => $fileName]);

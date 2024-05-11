@@ -72,9 +72,9 @@ class UploadFileController extends AbstractController {
             'mime' => $file->getMime(),
             'downloadUrl' =>
                 $this->generateUrl(
-                    'api.file.download',
+                    'api.file.download.base64',
                     [
-                        'uuid' => $file->getUuid(),
+                        'base64' => $file->getBase64Id(),
                         'fileName' => $file->getName()
                     ],
                     UrlGeneratorInterface::ABSOLUTE_URL

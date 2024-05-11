@@ -46,7 +46,7 @@ class SharexConfigFileService {
         $this->fileRepository->add($file, true);
 
         return $this->router->generate(
-            'api.file.download',
+            'api.file.download.uuid',
             ['uuid' => $file->getUuid(), 'fileName' => $file->getName()],
             UrlGeneratorInterface::ABSOLUTE_URL
         );

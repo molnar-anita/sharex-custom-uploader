@@ -99,6 +99,10 @@ class File {
         return $this->uuid;
     }
 
+    public function getBase64Id(): ?string {
+        return str_replace('==', '', base64_encode($this->id));
+    }
+
     public function getMime(): ?string {
         return $this->mime;
     }
