@@ -25,9 +25,12 @@ class FileService {
 
     public function saveFile(UploadedFile $uploadedFile, User $user, ?DateTimeImmutable $expireIn = null, bool $accessOnce = false): File {
         $randomName = $this->storage->saveContentWithRandomName($uploadedFile->getContent());
+        $sluggishNameWithExtension = $this->replaceLastHyphenWithPoint(
+            $this->slugger->slug($uploadedFile->getClientOriginalName())
+        );
 
         $file = (new File())
-            ->setName($this->slugger->slug($uploadedFile->getClientOriginalName()))
+            ->setName($sluggishNameWithExtension)
             ->setAccessOnce(false)
             ->setMime($uploadedFile->getMimeType())
             ->setPath($randomName)
@@ -38,6 +41,10 @@ class FileService {
         $this->fileRepository->add($file, true);
 
         return $file;
+    }
+
+    private function replaceLastHyphenWithPoint(string $string): string {
+        return preg_replace('/(.*)-(.+$)/', '$1.$2', $string);
     }
 
     public function downloadFile(string $uuid, string $fileName): Response {
