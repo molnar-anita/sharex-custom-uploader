@@ -51,6 +51,22 @@ class LocalFileStorageRepository {
         return Path::join($this->app->getProjectDir(), self::$storagePath, $name);
     }
 
+    public function exists(string $name): bool {
+        $path = $this->getPath($name);
+        return $this->filesystem->exists($path);
+    }
+
+    public function listFiles(): array {
+        return array_diff(
+            scandir($this->getStorageDirectoryPath()),
+            array('..', '.')
+        );
+    }
+
+    public function getStorageDirectoryPath(): string {
+        return Path::join($this->app->getProjectDir(), self::$storagePath);
+    }
+
     public function getContent(string $name): string {
         return file_get_contents($this->getPath($name));
     }

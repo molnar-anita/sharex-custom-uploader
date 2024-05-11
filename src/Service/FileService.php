@@ -87,11 +87,30 @@ class FileService {
         $files = $this->fileRepository->findExpiredFiles();
 
         foreach ($files as $file) {
+            if ($this->storage->exists($file->getPath())) {
+                $this->storage->delete($file->getPath());
+            }
             $this->fileRepository->remove($file);
         }
 
         $this->fileRepository->flush();
 
         return count($files);
+    }
+
+    public function removeOrphanFiles(): int {
+        $filesFromStorage = $this->storage->listFiles();
+        $filesFromDb = array_map(fn(File $file): string => $file->getPath(), $this->fileRepository->findAll());
+        $filesFromDb = array_fill_keys($filesFromDb, $filesFromDb);
+
+        $deletedFilesCount = 0;
+        foreach ($filesFromStorage as $file) {
+            if (!key_exists($file, $filesFromDb)) {
+                $this->storage->delete($file);
+                $deletedFilesCount++;
+            }
+        }
+
+        return $deletedFilesCount;
     }
 }
