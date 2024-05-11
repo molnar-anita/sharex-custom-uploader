@@ -50,6 +50,14 @@ class FileRepository extends ServiceEntityRepository {
             ->getResult();
     }
 
+    public function findOlderFiles(DateTimeImmutable $olderThan): array {
+        return $this->createQueryBuilder('f')
+            ->andWhere('f.created_at < :olderThan')
+            ->setParameter('olderThan', $olderThan)
+            ->getQuery()
+            ->getResult();
+    }
+
 //    /**
 //     * @return File[] Returns an array of File objects
 //     */

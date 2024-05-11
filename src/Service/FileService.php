@@ -83,9 +83,11 @@ class FileService {
         $this->storage->delete($file->getPath());
     }
 
-    public function removeOldFiles(): int {
-        $files = $this->fileRepository->findExpiredFiles();
+    public function removeExpiredFiles(): int {
+        return $this->removeFiles($this->fileRepository->findExpiredFiles());
+    }
 
+    private function removeFiles(array $files): int {
         foreach ($files as $file) {
             if ($this->storage->exists($file->getPath())) {
                 $this->storage->delete($file->getPath());
@@ -96,6 +98,10 @@ class FileService {
         $this->fileRepository->flush();
 
         return count($files);
+    }
+
+    public function removeOlderFiles(DateTimeImmutable $olderThan): int {
+        return $this->removeFiles($this->fileRepository->findOlderFiles($olderThan));
     }
 
     public function removeOrphanFiles(): int {
