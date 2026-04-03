@@ -12,7 +12,7 @@ class UserFactoryService {
         private readonly ApiKeyService $apiKeyService
     ) {}
 
-    public function getUserByApiKeyFromHeader(): User {
+    public function getUserByApiKeyFromHeader(): ?User {
         $request = $this->requestStack->getCurrentRequest();
         //TODO: Revisit this part, should have the same validation as the App\Middleware\CheckApiKeyMiddleware
         return $this->apiKeyService->getUserByApiKey(explode('App ', $request->headers->get('Authentication'))[1]);

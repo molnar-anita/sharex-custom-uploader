@@ -13,7 +13,6 @@ class ApiKeyService {
 
     public function createNewApiKey(string $name): User {
         $user = new User();
-
         $user->setName($name);
 
         $this->userRepository->add($user, true);
@@ -30,7 +29,6 @@ class ApiKeyService {
 
     public function removeApiKey(string $apiKey): void {
         $user = $this->getUserByApiKey($apiKey);
-
         $this->userRepository->remove($user, true);
     }
 
@@ -40,7 +38,6 @@ class ApiKeyService {
 
     public function removeApiKeyByName(string $name): void {
         $user = $this->getUserByName($name);
-
         $this->userRepository->remove($user, true);
     }
 

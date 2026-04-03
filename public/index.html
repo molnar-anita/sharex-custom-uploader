@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Upload to Sharex</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: "Lato", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+        
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            background-color: rgb(221, 221, 221);
+        }
+        
+        #api-key.has-error::placeholder {
+            color: white;
+        }
+        
+        #api-key.has-error {
+            background-color: rgb(210, 107, 107);
+            color: white;
+        }
+        
+        #upload-file {
+            display: none;
+        }
+        
+        #api-key {
+            border: none;
+            padding: 5px 15px;
+            font-size: 30px;
+            background-color: rgb(221, 221, 221);
+            transition: 0.75s;
+        }
+        
+        #api-key::before {
+            content: "Api Key:";
+        }
+        
+        #holder {
+            flex-grow: 1;
+            padding: 30px 30px 0;
+            display: flex;
+            flex-direction: column;
+            align-content: center;
+            justify-content: center;
+            flex-wrap: nowrap;
+            align-items: center;
+        }
+        
+        #upload-file-box {
+            text-align: center;
+            vertical-align: middle;
+            flex-grow: 1;
+            border: 2px #000000 solid;
+            color: #000000;
+            border-radius: 45px;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            cursor: pointer;
+            font-size: 76px;
+            opacity: 0.5;
+            transition: 1s;
+            height: 100%;
+            width: 100%;
+        }
+        
+        #upload-file-box:focus,
+        #upload-file-box:hover,
+        #upload-file-box.upload {
+            opacity: 0.9;
+            border-radius: 150px;
+        }
+        
+        #upload-file-box.upload span {
+            opacity: 0;
+            transition: 0.5s;
+        }
+        
+        #upload-file-box.upload .circular-progress {
+            opacity: 1;
+        }
+        
+        #upload-file-box.circular-progress span {
+            display: none;
+        }
+        
+        #upload-file-box.circular-progress {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border-width: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: conic-gradient(#049e04 0deg, grey 0deg);
+            position: absolute;
+            align-self: anchor-center;
+        }
+        
+        .inner-circle {
+            opacity: 0;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            align-content: center;
+            justify-content: center;
+            align-items: center;
+            background-color: lightgrey;
+            position: absolute;
+        }
+        
+        .circular-progress .inner-circle {
+            width: calc(100% - 8px);
+            height: calc(100% - 8px);
+            border-radius: 50%;
+            opacity: 1;
+        }
+        
+        .percentage {
+            position: relative;
+            font-size: 76px;
+            color: rgb(0, 0, 0, 0.8);
+        }
+    </style>
+    <script>
+        const green = "#049e04";
+
+        async function loadApiKeyFromCookies() {
+            return {
+                apiKey: ((await cookieStore.get("apiKey")) || {}).value
+            }
+        }
+
+        window.onload = async() => {
+            let {
+                apiKey
+            } = await loadApiKeyFromCookies();
+            let uploadInProgress = false;
+            let uncopiedUrl = null;
+
+            const uploadFileElem = document.getElementById("upload-file");
+            const boxElem = document.getElementById("upload-file-box");
+            boxElem.onclick = () => {
+                if (uncopiedUrl) {
+                    navigator.clipboard.writeText(uncopiedUrl);
+                    uncopiedUrl = null;
+                    return;
+                }
+                if (checkFields() && !uploadInProgress) {
+                    uploadFileElem.click();
+                }
+            };
+
+
+            const apiKeyElem = document.getElementById("api-key");
+            if (apiKey) {
+                apiKeyElem.value = apiKey;
+            }
+            apiKeyElem.onchange = apiKeyElem.onkeyup = () => {
+                if (!apiKeyElem.value) {
+                    apiKeyElem.classList.add("has-error");
+                } else {
+                    apiKeyElem.classList.remove("has-error");
+                    apiKey = apiKeyElem.value;
+                    cookieStore.set("apiKey", apiKey);
+                }
+            }
+            const percentageElem = document.getElementsByClassName("percentage").item(0);
+            const progressElem = boxElem;
+
+            const setProgress = (percent) => {
+                if (percent === 0) {
+                    percentageElem.style.color = null;
+                    progressElem.style.background = null;
+                } else {
+                    progressElem.style.background = `conic-gradient(${green} ${percent * 3.6}deg, grey 0deg)`;
+                }
+                percentageElem.innerText = `${Math.round(percent)}%`;
+            }
+            const setError = () => {
+                progressElem.style.background = "red";
+                percentageElem.style.color = "red";
+                percentageElem.innerText = "Error";
+            }
+
+            const checkFields = () => {
+                if (!apiKeyElem.value) {
+                    apiKeyElem.classList.add("has-error");
+                }
+                return !!apiKeyElem.value;
+            }
+
+            uploadFileElem.onchange = (e) => {
+                if (uploadFileElem.files.length === 0) {
+                    return;
+                }
+
+                uploadInProgress = true;
+                boxElem.classList.add("upload", "circular-progress");
+
+                const formData = new FormData();
+                formData.append("file", uploadFileElem.files[0]);
+
+                const request = new XMLHttpRequest();
+                request.open('POST', '/api/file');
+                request.setRequestHeader("Authentication", `App ${apiKey}`);
+
+                const fileSize = uploadFileElem.files[0].size;
+                request.upload.addEventListener('progress', function(e) {
+                    if (e.loaded <= fileSize) {
+                        const percent = e.loaded / fileSize * 100;
+                        setProgress(percent);
+                    }
+                });
+
+                request.onloadend = function() {
+                    console.log("itt vagyok", this.status, this.readyState, this.DONE);
+                    if (this.readyState === this.DONE && this.status === 200) {
+                        setProgress(100);
+                        const result = JSON.parse(request.responseText);
+                        try {
+                            navigator.clipboard.writeText(result.downloadUrl);
+                            uncopiedUrl = result.downloadUrl;
+                            setTimeout(() => {
+                                percentageElem.style.color = green;
+                                percentageElem.innerText = "Done";
+                                setTimeout(finishUpload, 2500);
+                            }, 1500)
+                        } catch (error) {
+                            percentageElem.innerText = "Copy URL";
+                        }
+                    } else {
+                        setError();
+                        setTimeout(finishUpload, 4000);
+                    }
+                };
+
+                request.send(formData);
+            }
+
+            const finishUpload = () => {
+                boxElem.classList.remove("upload", "circular-progress");
+                setProgress(0);
+                uploadInProgress = false;
+                uncopiedUrl = null;
+            }
+        };
+    </script>
+</head>
+
+<body>
+    <input id="upload-file" type="file" />
+    <div id="holder">
+        <div id="upload-file-box">
+            <span>Upload file</span>
+            <div class="inner-circle">
+                <p class="percentage">0%</p>
+            </div>
+        </div>
+    </div>
+    <input id="api-key" type="password" placeholder="Api Key" />
+</body>
+
+</html>
